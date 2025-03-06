@@ -68,7 +68,14 @@ public class Utility
             copyProcess.WaitForExit();
         }
 
-        OnNewMessage?.Invoke(this, "Step 3 di 4: Verifica del file immagine con 7z...");
+        OnNewMessage?.Invoke(this, "Step 3 di 4: Elimino il file 7z di transizione...");
+        // Eliminazione del file 7z dopo la concatenazione
+        if (File.Exists(compressedFile))
+        {
+            File.Delete(compressedFile);
+        }
+
+        OnNewMessage?.Invoke(this, "Step 4 di 4: Verifica del file immagine con 7z...");
 
         // Verifica del file 7z utilizzando 7-Zip
         ProcessStartInfo verifyPsi = new ProcessStartInfo
@@ -88,13 +95,6 @@ public class Utility
             {
                 throw new Exception("Errore: Il file compresso non è valido.");
             }
-        }
-
-        OnNewMessage?.Invoke(this, "Step 4 di 4: Elimino il file 7z di transizione...");
-        // Eliminazione del file 7z dopo la concatenazione
-        if (File.Exists(compressedFile))
-        {
-            File.Delete(compressedFile);
         }
 
         OnNewMessage?.Invoke(this, "Operazione completata.");
