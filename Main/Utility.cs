@@ -32,7 +32,7 @@ public class Utility
             throw new Exception($"File immagine '{imageFile}' non trovato.");
         }
 
-        OnNewMessage?.Invoke(this, "Compressione in corso...");
+        OnNewMessage?.Invoke(this, "Step 1 di 4: Compressione in corso...");
         // Compressione con 7-Zip
         ProcessStartInfo psi = new ProcessStartInfo
         {
@@ -53,13 +53,28 @@ public class Utility
             throw new Exception("Errore nella compressione della cartella.");
         }
 
-        OnNewMessage?.Invoke(this, "Verifica del file compresso...");
+        OnNewMessage?.Invoke(this, "Step 2 di 4: Concatenazione con immagine in corso...");
+        // Concatenazione con copy /b
+        string copyCommand = $"/c copy /b \"{imageFile}\"+\"{compressedFile}\" \"{outputFile}\"";
+        ProcessStartInfo copyPsi = new ProcessStartInfo("cmd.exe", copyCommand)
+        {
+            RedirectStandardOutput = true,
+            UseShellExecute = false,
+            CreateNoWindow = true
+        };
+
+        using (Process copyProcess = Process.Start(copyPsi))
+        {
+            copyProcess.WaitForExit();
+        }
+
+        OnNewMessage?.Invoke(this, "Step 3 di 4: Verifica del file immagine con 7z...");
 
         // Verifica del file 7z utilizzando 7-Zip
         ProcessStartInfo verifyPsi = new ProcessStartInfo
         {
             FileName = sevenZipPath,
-            Arguments = $"t \"{compressedFile}\"",
+            Arguments = $"t \"{outputFile}\"",
             RedirectStandardOutput = true,
             UseShellExecute = false,
             CreateNoWindow = true
@@ -75,22 +90,7 @@ public class Utility
             }
         }
 
-        OnNewMessage?.Invoke(this, "Concatenazione con immagine in corso...");
-        // Concatenazione con copy /b
-        string copyCommand = $"/c copy /b \"{imageFile}\"+\"{compressedFile}\" \"{outputFile}\"";
-        ProcessStartInfo copyPsi = new ProcessStartInfo("cmd.exe", copyCommand)
-        {
-            RedirectStandardOutput = true,
-            UseShellExecute = false,
-            CreateNoWindow = true
-        };
-
-        using (Process copyProcess = Process.Start(copyPsi))
-        {
-            copyProcess.WaitForExit();
-        }
-
-        OnNewMessage?.Invoke(this, "Elimino il file 7z...");
+        OnNewMessage?.Invoke(this, "Step 4 di 4: Elimino il file 7z di transizione...");
         // Eliminazione del file 7z dopo la concatenazione
         if (File.Exists(compressedFile))
         {
@@ -98,5 +98,15 @@ public class Utility
         }
 
         OnNewMessage?.Invoke(this, "Operazione completata.");
+    }
+
+    public void CompressAndConcatenateSubfolders(string sourceFolder, string destinationFolder)
+    {
+        var subFolders = Directory.GetDirectories(sourceFolder);
+
+        foreach (var subFolder in subFolders)
+        {
+            CompressAndConcatenate(subFolder, destinationFolder);
+        }
     }
 }

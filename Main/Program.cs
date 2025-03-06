@@ -29,18 +29,36 @@ utility.OnNewMessage += (sender, message) =>
 };
 
 if(workOnSubfolders == "1")
-try
 {
-    utility.CompressAndConcatenate(sourceFolder, destinationFolder);
+    try
+    {
+        utility.CompressAndConcatenate(sourceFolder, destinationFolder);
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine(ex.Message);
+    }
+    finally
+    {
+        Console.WriteLine();
+        Console.WriteLine("Premi un tasto per uscire...");
+        Console.ReadKey();
+    }
 }
-catch (Exception ex)
+else
 {
-    Console.WriteLine(ex.Message);
+    try
+    {
+        utility.CompressAndConcatenateSubfolders(sourceFolder, destinationFolder);
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine(ex.Message);
+    }
+    finally
+    {
+        Console.WriteLine();
+        Console.WriteLine("Premi un tasto per uscire...");
+        Console.ReadKey();
+    }
 }
-finally
-{
-    Console.WriteLine();
-    Console.WriteLine("Premi un tasto per uscire...");
-    Console.ReadKey();
-}
-
