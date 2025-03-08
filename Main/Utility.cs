@@ -18,7 +18,7 @@ public class Utility
 
         string folderName = new DirectoryInfo(sourceFolder).Name;
         string compressedFile = Path.Combine(destinationFolder, folderName + ".7z");
-        string imageFile = "Resources/image.png"; // Immagine base
+        string imageFile = Path.Combine(Directory.GetCurrentDirectory(), "Resources\\image.png"); // Immagine base
         string outputFile = Path.Combine(destinationFolder, folderName + ".png");
         string sevenZipPath = "C:\\Program Files\\7-Zip\\7z.exe";
 
@@ -104,9 +104,22 @@ public class Utility
     {
         var subFolders = Directory.GetDirectories(sourceFolder);
 
-        foreach (var subFolder in subFolders)
+        if (subFolders.Length == 0)
         {
-            CompressAndConcatenate(subFolder, destinationFolder);
+            throw new Exception("Non ci sono sottocartelle da elaborare.");
+        }
+        else
+        {
+            int i = 1;
+            int subFoldersCount = subFolders.Count();
+            OnNewMessage?.Invoke(this, $"Trovate {subFoldersCount} cartelle.");
+
+            foreach (var subFolder in subFolders)
+            {
+                OnNewMessage?.Invoke(this, $"\n[{i} di {subFoldersCount}] Elaborazione della sottocartella '{subFolder}'...");
+                CompressAndConcatenate(subFolder, destinationFolder);
+                i++;
+            }
         }
     }
 }
